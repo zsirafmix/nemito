@@ -1,0 +1,9 @@
+<resources>
+  <style name="T" parent="android:Theme.Material.NoActionBar">
+    <item name="android:colorAccent">#FFD400</item><item name="android:colorPrimary">#000000</item><item name="android:colorPrimaryDark">#000000</item>
+    <item name="android:windowBackground">#0B0B0B</item><item name="android:statusBarColor">#000000</item><item name="android:navigationBarColor">#000000</item>
+    <item name="android:textColor">#FFFFFF</item><item name="android:colorControlActivated">#FFD400</item>
+  </style>
+  <style name="T.Full"><item name="android:windowBackground">#000000</item><item name="android:windowAnimationStyle">@null</item></style>
+  <color name="bg">#000000</color>
+</resources>
