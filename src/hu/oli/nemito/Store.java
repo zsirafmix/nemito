@@ -8,7 +8,7 @@ public class Store {
   static Set<String> sel(Context c){return new HashSet<>(p(c).getStringSet("sel",new HashSet<String>()));}
   static void setSel(Context c,String pkg,boolean v){Set<String> s=sel(c); if(v)s.add(pkg); else s.remove(pkg); p(c).edit().putStringSet("sel",s).apply(); if(on(c))ongoing(c);}
   static boolean granted(Context c){String f=Settings.Secure.getString(c.getContentResolver(),"enabled_notification_listeners"); return f!=null&&f.contains(c.getPackageName());}
-  static void setOn(Context c,boolean v){p(c).edit().putBoolean("on",v).commit(); if(v){ongoing(c); MuteService.cancelActiveNow();} else ((NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(1);
+  static void setOn(Context c,boolean v){p(c).edit().putBoolean("on",v).commit(); if(v)SettingsActivity.unlocked=false; if(v){ongoing(c); MuteService.cancelActiveNow();} else ((NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(1);
     if(Build.VERSION.SDK_INT>=24) try{android.service.quicksettings.TileService.requestListeningState(c,new ComponentName(c,MuteTile.class));}catch(Exception e){} }
   static void ongoing(Context c){NotificationManager nm=(NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
     Notification.Builder b; if(Build.VERSION.SDK_INT>=26){nm.createNotificationChannel(new NotificationChannel("st","Némítás állapota",NotificationManager.IMPORTANCE_MIN)); b=new Notification.Builder(c,"st");} else {b=new Notification.Builder(c); b.setPriority(Notification.PRIORITY_MIN);}
