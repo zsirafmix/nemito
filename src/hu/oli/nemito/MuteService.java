@@ -2,7 +2,7 @@ package hu.oli.nemito;
 import android.service.notification.*;import org.json.*;
 public class MuteService extends NotificationListenerService {
   static MuteService inst;
-  @Override public void onListenerConnected(){inst=this; if(Store.on(this))cancelActive();}
+  @Override public void onListenerConnected(){inst=this; Store.icon(this,Store.on(this)); if(Store.on(this))Store.ongoing(this); if(Store.on(this))cancelActive();}
   @Override public void onListenerDisconnected(){inst=null;}
   static void cancelActiveNow(){if(inst!=null)inst.cancelActive();}
   void cancelActive(){try{StatusBarNotification[] a=getActiveNotifications(); if(a==null)return; java.util.Set<String> s=Store.sel(this); for(StatusBarNotification n:a) if(s.contains(n.getPackageName())) block(n);}catch(Exception e){}}

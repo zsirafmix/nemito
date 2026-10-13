@@ -8,7 +8,7 @@ public class Store {
   static Set<String> sel(Context c){return new HashSet<>(p(c).getStringSet("sel",new HashSet<String>()));}
   static void setSel(Context c,String pkg,boolean v){Set<String> s=sel(c); if(v)s.add(pkg); else s.remove(pkg); p(c).edit().putStringSet("sel",s).apply(); if(on(c))ongoing(c);}
   static boolean granted(Context c){String f=Settings.Secure.getString(c.getContentResolver(),"enabled_notification_listeners"); return f!=null&&f.contains(c.getPackageName());}
-  static void setOn(Context c,boolean v){p(c).edit().putBoolean("on",v).commit(); if(v)SettingsActivity.unlocked=false; if(v){ongoing(c); MuteService.cancelActiveNow();} else ((NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(1);
+  static void setOn(Context c,boolean v){p(c).edit().putBoolean("on",v).commit(); if(v)SettingsActivity.unlocked=false; icon(c,v); if(v){ongoing(c); MuteService.cancelActiveNow();} else ((NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(1);
     if(Build.VERSION.SDK_INT>=24) try{android.service.quicksettings.TileService.requestListeningState(c,new ComponentName(c,MuteTile.class));}catch(Exception e){} }
   static void ongoing(Context c){NotificationManager nm=(NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
     Notification.Builder b; if(Build.VERSION.SDK_INT>=26){nm.createNotificationChannel(new NotificationChannel("st","Némítás állapota",NotificationManager.IMPORTANCE_MIN)); b=new Notification.Builder(c,"st");} else {b=new Notification.Builder(c); b.setPriority(Notification.PRIORITY_MIN);}
@@ -20,4 +20,10 @@ public class Store {
     for(int i=0;i<a.length()&&n.length()<max;i++){JSONObject x=a.optJSONObject(i); if(x==null)continue; if(dedupPkg!=null&&dedupPkg.equals(x.optString("p")))continue; n.put(x);} p(c).edit().putString(k,n.toString()).apply();}
   static void clear(Context c,String k){p(c).edit().remove(k).apply();}
   static String label(Context c,String pkg){try{return c.getPackageManager().getApplicationLabel(c.getPackageManager().getApplicationInfo(pkg,0)).toString();}catch(Exception e){return pkg;}}
+
+  static synchronized void icon(Context c,boolean on){android.content.pm.PackageManager pm=c.getPackageManager();
+    ComponentName onC=new ComponentName(c,"hu.oli.nemito.LauncherOn"),offC=new ComponentName(c,"hu.oli.nemito.LauncherOff");
+    ComponentName want=on?onC:offC, other=on?offC:onC;
+    try{ if(pm.getComponentEnabledSetting(want)!=android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED) pm.setComponentEnabledSetting(want,android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,android.content.pm.PackageManager.DONT_KILL_APP);
+      if(pm.getComponentEnabledSetting(other)!=android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED) pm.setComponentEnabledSetting(other,android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED,android.content.pm.PackageManager.DONT_KILL_APP);}catch(Exception e){}}
 }
