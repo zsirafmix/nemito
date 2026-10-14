@@ -8,12 +8,12 @@ public class Store {
   static Set<String> sel(Context c){return new HashSet<>(p(c).getStringSet("sel",new HashSet<String>()));}
   static void setSel(Context c,String pkg,boolean v){Set<String> s=sel(c); if(v)s.add(pkg); else s.remove(pkg); p(c).edit().putStringSet("sel",s).apply(); if(on(c))ongoing(c);}
   static boolean granted(Context c){String f=Settings.Secure.getString(c.getContentResolver(),"enabled_notification_listeners"); return f!=null&&f.contains(c.getPackageName());}
-  static void setOn(Context c,boolean v){p(c).edit().putBoolean("on",v).commit(); if(v)SettingsActivity.unlocked=false; icon(c,v); if(v){ongoing(c); MuteService.cancelActiveNow();} else ((NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(1);
+  static void setOn(Context c,boolean v){p(c).edit().putBoolean("on",v).commit(); if(v)SettingsActivity.unlocked=false; if(v){ongoing(c); MuteService.cancelActiveNow();} else ((NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(1);
     if(Build.VERSION.SDK_INT>=24) try{android.service.quicksettings.TileService.requestListeningState(c,new ComponentName(c,MuteTile.class));}catch(Exception e){} }
   static void ongoing(Context c){NotificationManager nm=(NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
-    Notification.Builder b; if(Build.VERSION.SDK_INT>=26){nm.createNotificationChannel(new NotificationChannel("st","Némítás állapota",NotificationManager.IMPORTANCE_MIN)); b=new Notification.Builder(c,"st");} else {b=new Notification.Builder(c); b.setPriority(Notification.PRIORITY_MIN);}
+    Notification.Builder b; if(Build.VERSION.SDK_INT>=26){try{nm.deleteNotificationChannel("st");}catch(Exception e){} NotificationChannel ch=new NotificationChannel("st2","Némítás állapota",NotificationManager.IMPORTANCE_LOW); ch.setSound(null,null); ch.enableVibration(false); ch.setShowBadge(false); nm.createNotificationChannel(ch); b=new Notification.Builder(c,"st2");} else {b=new Notification.Builder(c); b.setPriority(Notification.PRIORITY_LOW);}
     Intent i=new Intent(c,SettingsActivity.class); PendingIntent pi=PendingIntent.getActivity(c,0,i,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-    b.setSmallIcon(R.drawable.ic_stat).setContentTitle("Némítás aktív – "+sel(c).size()+" app").setContentText("Koppints a beállításokhoz").setOngoing(true).setColor(Y).setContentIntent(pi).setShowWhen(false);
+    b.setSmallIcon(R.drawable.ic_star).setContentTitle("Némítás aktív – "+sel(c).size()+" app").setContentText("Koppints a beállításokhoz").setOngoing(true).setColor(Y).setContentIntent(pi).setShowWhen(false);
     try{nm.notify(1,b.build());}catch(Exception e){}}
   static JSONArray arr(Context c,String k){try{return new JSONArray(p(c).getString(k,"[]"));}catch(Exception e){return new JSONArray();}}
   static synchronized void push(Context c,String k,JSONObject o,int max,String dedupPkg){JSONArray a=arr(c,k),n=new JSONArray(); n.put(o);
@@ -21,9 +21,4 @@ public class Store {
   static void clear(Context c,String k){p(c).edit().remove(k).apply();}
   static String label(Context c,String pkg){try{return c.getPackageManager().getApplicationLabel(c.getPackageManager().getApplicationInfo(pkg,0)).toString();}catch(Exception e){return pkg;}}
 
-  static synchronized void icon(Context c,boolean on){android.content.pm.PackageManager pm=c.getPackageManager();
-    ComponentName onC=new ComponentName(c,"hu.oli.nemito.LauncherOn"),offC=new ComponentName(c,"hu.oli.nemito.LauncherOff");
-    ComponentName want=on?onC:offC, other=on?offC:onC;
-    try{ if(pm.getComponentEnabledSetting(want)!=android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED) pm.setComponentEnabledSetting(want,android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,android.content.pm.PackageManager.DONT_KILL_APP);
-      if(pm.getComponentEnabledSetting(other)!=android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED) pm.setComponentEnabledSetting(other,android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED,android.content.pm.PackageManager.DONT_KILL_APP);}catch(Exception e){}}
 }
